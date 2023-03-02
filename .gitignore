@@ -1,3 +1,5 @@
 # Project exclude paths
 /jcef-bundle/
 /output/
+.idea/
+jcef-conveyor.iml
