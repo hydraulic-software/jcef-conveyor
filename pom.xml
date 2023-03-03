@@ -66,6 +66,21 @@
                     <mainClass>jceftest.SampleFrame</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.10</version>
+                <configuration>
+                    <programs>
+                        <program>
+                            <mainClass>com.mycompany.app.App</mainClass>
+                            <id>app</id>
+                        </program>
+                    </programs>
+                    <repositoryLayout>flat</repositoryLayout>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

@@ -44,35 +44,41 @@ function dl_jcef_mac_natives() {
   tar xzf "../$tarball"
   rm "../$tarball"
 
-  # The "Chromium Embedded Framework.framework" doesn't follow the normal layout for a framework that Apple's tools make,
-  # and current Conveyors don't like it, so we fix it up here to be a versioned framework.  (CO-354)
-  files=( "Chromium Embedded Framework.framework/"* )
-  mkdir -p "Chromium Embedded Framework.framework/Versions/$jcef_version"
-  for f in "${files[@]}"; do
-    mv "$f" "Chromium Embedded Framework.framework/Versions/$jcef_version"
-  done
-  pushd "Chromium Embedded Framework.framework/Versions" >/dev/null
-  ln -s -s "$jcef_version" Current
-  # Get rid of the signature from the developer.
-  rm -r Current/_CodeSignature
-  # Fix up the plist (CO-355)
-  plutil -insert CFBundleName -string "org.cef.framework" Current/Resources/Info.plist
-  popd >/dev/null
+  if [ -d "Chromium Embedded Framework.framework" ]; then
+      # The "Chromium Embedded Framework.framework" doesn't follow the normal layout for a framework that Apple's tools make,
+      # and current Conveyors don't like it, so we fix it up here to be a versioned framework.  (CO-354)
+      files=( "Chromium Embedded Framework.framework/"* )
+      mkdir -p "Chromium Embedded Framework.framework/Versions/$jcef_version"
+      for f in "${files[@]}"; do
+        mv "$f" "Chromium Embedded Framework.framework/Versions/$jcef_version"
+      done
+      pushd "Chromium Embedded Framework.framework/Versions" >/dev/null
+      ln -s -s "$jcef_version" Current
+      # Get rid of the signature from the developer.
+      rm -r Current/_CodeSignature
+      # Fix up the plist (CO-355)
+      plutil -insert CFBundleName -string "org.cef.framework" Current/Resources/Info.plist
+      popd >/dev/null
 
-  # The helper app comes pre-notarized but this is wrong (it's nonsensical to notarize a framework helper) and Conveyor doesn't correctly
-  # strip it. We could drop it with a remap spec but it's easier to just delete the errant file here.  (CO-353)
-  for app in *.app; do
-    rm -f "$app/Contents/CodeResources"
-  done
+      # The helper app comes pre-notarized but this is wrong (it's nonsensical to notarize a framework helper) and Conveyor doesn't correctly
+      # strip it. We could drop it with a remap spec but it's easier to just delete the errant file here.  (CO-353)
+      for app in *.app; do
+        rm -f "$app/Contents/CodeResources"
+      done
+  elif [ -f "jcef.dll" ]; then
+      # Windows, nothing to do.
+      true
+  fi
 
   popd
 }
 
 dl_jcef_mac_natives macosx-amd64
 dl_jcef_mac_natives macosx-arm64
+dl_jcef_mac_natives windows-amd64
 
 popd >/dev/null
 
-extra_keys="-Ktemp.jcef.mac.amd64=$natives_dir/macosx-amd64 -Ktemp.jcef.mac.aarch64=$natives_dir/macosx-arm64"
+extra_keys="-Ktemp.jcef.mac.amd64=$natives_dir/macosx-amd64 -Ktemp.jcef.mac.aarch64=$natives_dir/macosx-arm64 -Ktemp.jcef.windows.amd64=$natives_dir/windows-amd64"
 
-conveyor $@ $extra_keys make notarized-mac-app
+conveyor "$@" $extra_keys make site
