@@ -17,7 +17,6 @@ This repository shows how to ship an app that use JCEF Maven with Conveyor.
 
 1. Currently the app only works on macOS and Windows.
 2. You must build on UNIX (this is because the `from-maven.conf` doesn't work on Windows yet, not any fundamental incompatibility, you could provide the classpath separately).
-3. You must build with `build.sh` which works around various bugs and limits in Conveyor, mostly related to weirdness in how JCEF is distributed.
 
 Linux support and Windows building will hopefully come soon.
 
@@ -32,7 +31,7 @@ val jcefDir: File = run {
         // Packaged with Conveyor
         val os = System.getProperty("os.name").lowercase()
         if (os.startsWith("mac")) {
-            File(appDir).resolve("../Frameworks").also { check(it.resolve("jcef Helper.app").exists()) }
+            File(appDir).resolve("../Frameworks").normalize().also { check(it.resolve("jcef Helper.app").exists()) }
         } else if (os.startsWith("windows")) {
             File(appDir).resolve("jcef").also { check(it.resolve("jcef.dll").exists()) }
         } else {
@@ -48,5 +47,18 @@ val builder = CefAppBuilder()
 builder.setInstallDir(jcefDir)
 ```
 
+**IMPORTANT:** You must normalize the path on macOS as Chrome will throw lots of errors and you'll get corrupted rendering if there is a .. in the install dir. 
+
 When run outside of a packaged app, this will initialize JCEF in the normal way. It'll download the JCEF native binaries for your
 platform. When run inside a packaged app, it'll find the pre-extracted location using a system property.
+
+## Tricks used in conveyor.conf
+
+JCEF requires some fairly sophisticated config. It requires at least Conveyor 7.2. Pay attention to these parts:
+
+1. The JCEF natives are extracted from a tarball that is itself inside a jar file. This is done by exploiting the fact that Conveyor can be pointed at files inside zips using the `jar:` protocol scheme, and additionally, that archives are extracted by default when used as inputs.
+2. You need to specify the JCEF Maven version in your config. We use HOCON substitution syntax to construct the highly repetitive URLs and file paths.
+3. We specify extra Mac metadata that makes Chrome work better.
+4. JCEF accesses internal Java APIs. We whitelist those using JVM options. This is optional because Conveyor would auto-detect these for us, but doing so explicitly suppresses the warning that's generated when it does.
+5. On Windows the JCEF natives are placed in a subdirectroy of the app dir called `jcef`, this keeps it separated from the main app JARs and avoids problems. 
+6. JCEF Maven expects a file called `install.lock` to exist in the natives dir, but the tarball doesn't contain it. We create it using an input definition.

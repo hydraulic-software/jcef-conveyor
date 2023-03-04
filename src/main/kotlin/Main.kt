@@ -36,7 +36,7 @@ class SampleFrame(startURL: String, useOSR: Boolean = false, isTransparent: Bool
                 // Packaged with Conveyor
                 val os = System.getProperty("os.name").lowercase()
                 if (os.startsWith("mac")) {
-                    File(appDir).resolve("../Frameworks").also { check(it.resolve("jcef Helper.app").exists()) }
+                    File(appDir).resolve("../Frameworks").normalize().also { check(it.resolve("jcef Helper.app").exists()) }
                 } else if (os.startsWith("windows")) {
                     File(appDir).resolve("jcef").also { check(it.resolve("jcef.dll").exists()) }
                 } else {
