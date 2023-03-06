@@ -3,4 +3,5 @@
 /output/
 .idea/
 jcef-conveyor.iml
-target/
+.gradle/
+build/
