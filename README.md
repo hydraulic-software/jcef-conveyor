@@ -13,12 +13,9 @@ It can code sign and notarize apps for macOS and Windows from any platform, incl
 
 This repository shows how to ship an app that use JCEF Maven with Conveyor.
 
-## Caveats
+## Caveat
 
-1. Currently the app only works on macOS and Windows.
-2. You must build on UNIX (this is because the `from-maven.conf` doesn't work on Windows yet, not any fundamental incompatibility, you could provide the classpath separately).
-
-Linux support and Windows building will hopefully come soon.
+Currently it's only been tested on macOS and Windows. Linux support will hopefully come soon.
 
 ## Initializing JCEF
 
@@ -56,9 +53,8 @@ platform. When run inside a packaged app, it'll find the pre-extracted location 
 
 JCEF requires some fairly sophisticated config. It requires at least Conveyor 7.2. Pay attention to these parts:
 
-1. The JCEF natives are extracted from a tarball that is itself inside a jar file. This is done by exploiting the fact that Conveyor can be pointed at files inside zips using the `jar:` protocol scheme, and additionally, that archives are extracted by default when used as inputs.
-2. You need to specify the JCEF Maven version in your config. We use HOCON substitution syntax to construct the highly repetitive URLs and file paths.
-3. We specify extra Mac metadata that makes Chrome work better.
-4. JCEF accesses internal Java APIs. We whitelist those using JVM options. This is optional because Conveyor would auto-detect these for us, but doing so explicitly suppresses the warning that's generated when it does.
-5. On Windows the JCEF natives are placed in a subdirectroy of the app dir called `jcef`, this keeps it separated from the main app JARs and avoids problems. 
-6. JCEF Maven expects a file called `install.lock` to exist in the natives dir, but the tarball doesn't contain it. We create it using an input definition.
+1. The JCEF natives are extracted from a tarball that is itself inside a jar file. This is done by exploiting the fact that Conveyor can be pointed at files inside zips using the `zip:` protocol scheme, and additionally, that archives are extracted by default when used as inputs.
+2. We specify extra Mac metadata that makes Chrome work better.
+3. JCEF accesses internal Java APIs. We whitelist those using JVM options in the `build.gradle.kts` file, and this is propagated to Conveyor by the Gradle plugin. This is optional because Conveyor would auto-detect these for us, but doing so explicitly suppresses the warning that's generated when it does.
+4. On Windows the JCEF natives are placed in a subdirectroy of the app dir called `jcef`, this keeps it separated from the main app JARs and avoids problems. 
+5. JCEF Maven expects a file called `install.lock` to exist in the natives dir, but the tarball doesn't contain it. We create it using an input definition.
