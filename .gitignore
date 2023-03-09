@@ -5,3 +5,5 @@
 jcef-conveyor.iml
 .gradle/
 build/
+prod.conveyor.conf
+self-signing.conf
