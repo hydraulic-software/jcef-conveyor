@@ -40,7 +40,7 @@ class SampleFrame(startURL: String, useOSR: Boolean = false, isTransparent: Bool
                 } else if (os.startsWith("windows")) {
                     File(appDir).resolve("jcef").also { check(it.resolve("jcef.dll").exists()) }
                 } else {
-                    TODO("Linux")
+                    File(appDir).resolve("jcef").also { check(it.resolve("libjcef.so").exists()) }
                 }
             } else {
                 // Dev mode.

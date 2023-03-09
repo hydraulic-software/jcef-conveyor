@@ -13,10 +13,6 @@ It can code sign and notarize apps for macOS and Windows from any platform, incl
 
 This repository shows how to ship an app that use JCEF Maven with Conveyor.
 
-## Caveat
-
-Currently it's only been tested on macOS and Windows. Linux support will hopefully come soon.
-
 ## Initializing JCEF
 
 You need a bit of boilerplate code when you initialize JCEF. Look at `Main.kt` for this section:
@@ -32,7 +28,7 @@ val jcefDir: File = run {
         } else if (os.startsWith("windows")) {
             File(appDir).resolve("jcef").also { check(it.resolve("jcef.dll").exists()) }
         } else {
-            TODO("Linux")
+            File(appDir).resolve("jcef").also { check(it.resolve("libjcef.so").exists()) }
         }
     } else {
         // Dev mode.
@@ -47,7 +43,7 @@ builder.setInstallDir(jcefDir)
 **IMPORTANT:** You must normalize the path on macOS as Chrome will throw lots of errors and you'll get corrupted rendering if there is a .. in the install dir. 
 
 When run outside of a packaged app, this will initialize JCEF in the normal way. It'll download the JCEF native binaries for your
-platform. When run inside a packaged app, it'll find the pre-extracted location using a system property.
+platform. When run inside a packaged app it'll find the pre-extracted location using a system property.
 
 ## Tricks used in conveyor.conf
 
