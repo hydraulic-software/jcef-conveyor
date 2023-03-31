@@ -1,6 +1,6 @@
 package jcefconveyor
 
-import me.friwi.jcefmaven.CefAppBuilder
+import conveyor.JCefSetup
 import me.friwi.jcefmaven.MavenCefAppHandlerAdapter
 import org.cef.CefApp
 import org.cef.CefApp.CefAppState
@@ -14,7 +14,6 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.KeyboardFocusManager
 import java.awt.event.*
-import java.io.File
 import javax.swing.JFrame
 import javax.swing.JTextField
 import kotlin.system.exitProcess
@@ -30,26 +29,7 @@ class SampleFrame(startURL: String, useOSR: Boolean = false, isTransparent: Bool
     init {
         // (0) Initialize CEF either with the included, pre-extracted CEF install or pointing to a directory
         //     in your dev tree where it'll be downloaded and installed.
-        val jcefDir: File = run {
-            val appDir: String? = System.getProperty("app.dir")
-            if (appDir != null) {
-                // Packaged with Conveyor
-                val os = System.getProperty("os.name").lowercase()
-                if (os.startsWith("mac")) {
-                    File(appDir).resolve("../Frameworks").normalize().also { check(it.resolve("jcef Helper.app").exists()) }
-                } else if (os.startsWith("windows")) {
-                    File(appDir).resolve("jcef").also { check(it.resolve("jcef.dll").exists()) }
-                } else {
-                    File(appDir).resolve("jcef").also { check(it.resolve("libjcef.so").exists()) }
-                }
-            } else {
-                // Dev mode.
-                File("./jcef-bundle")
-            }
-        }
-
-        val builder = CefAppBuilder()
-        builder.setInstallDir(jcefDir)
+        val builder = JCefSetup.builder()
 
         // windowless_rendering_enabled must be set to false if not wanted.
         builder.cefSettings.windowless_rendering_enabled = useOSR
